@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 type Match = {
   date: string
@@ -141,34 +142,25 @@ function MatchCard({ match, showReview }: { match: Match; showReview?: boolean }
       <h3 className="mt-1 text-lg font-semibold text-slate-900">
         {match.home} <span aria-hidden="true">vs</span> {match.away}
       </h3>
-      {match.score && (
-        <p className="mt-2 text-base font-medium text-red-700" aria-label={`Final score ${match.score}`}>
-          FT: {match.score}
-        </p>
-      )}
+      {match.score && <p className="mt-2 text-base font-medium text-red-700">FT: {match.score}</p>}
       {showReview && match.review && <p className="mt-3 text-slate-800">{match.review}</p>}
     </article>
   )
 }
 
-function ArsenalTab() {
+function ArsenalPage() {
   return (
     <main id="main-content" className="mx-auto grid max-w-4xl gap-8 px-4 py-8 md:grid-cols-2">
       <section aria-labelledby="recent-heading">
-        <h2 id="recent-heading" className="mb-4 text-2xl font-semibold">
-          Recent reviews
-        </h2>
+        <h2 id="recent-heading" className="mb-4 text-2xl font-semibold">Recent reviews</h2>
         <div className="space-y-4">
           {recentMatches.map((m) => (
             <MatchCard key={`${m.date}-${m.home}`} match={m} showReview />
           ))}
         </div>
       </section>
-
       <section aria-labelledby="upcoming-heading">
-        <h2 id="upcoming-heading" className="mb-4 text-2xl font-semibold">
-          Upcoming games
-        </h2>
+        <h2 id="upcoming-heading" className="mb-4 text-2xl font-semibold">Upcoming games</h2>
         <div className="space-y-4">
           {upcomingMatches.map((m) => (
             <MatchCard key={`${m.date}-${m.home}`} match={m} />
@@ -179,12 +171,9 @@ function ArsenalTab() {
   )
 }
 
-function XiaoXiangTab() {
+function XiaoXiangPage() {
   const [watchedMap, setWatchedMap] = useState<Record<number, boolean>>(() => readWatchedMap())
-  const watchedCount = useMemo(
-    () => Object.values(watchedMap).filter(Boolean).length,
-    [watchedMap],
-  )
+  const watchedCount = useMemo(() => Object.values(watchedMap).filter(Boolean).length, [watchedMap])
 
   function toggleEpisode(no: number) {
     setWatchedMap((prev) => {
@@ -196,47 +185,20 @@ function XiaoXiangTab() {
 
   return (
     <main id="main-content" className="mx-auto max-w-4xl px-4 py-8">
-      <section aria-labelledby="show-heading" className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-        <h2 id="show-heading" className="text-2xl font-semibold text-rose-900">
-          小巷人家 · 追剧清单
-        </h2>
-        <p className="mt-2 text-rose-800">
-          已看 <strong>{watchedCount}</strong> / {episodeList.length} 集（自动保存在本机浏览器）
-        </p>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-rose-200" aria-hidden="true">
-          <div
-            className="h-full bg-rose-600"
-            style={{ width: `${(watchedCount / episodeList.length) * 100}%` }}
-          />
-        </div>
+      <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+        <h2 className="text-2xl font-semibold text-rose-900">小巷人家 · 追剧清单</h2>
+        <p className="mt-2 text-rose-800">已看 <strong>{watchedCount}</strong> / {episodeList.length} 集（保存在本机浏览器）</p>
       </section>
-
-      <section aria-label="episode list" className="mt-6 space-y-3">
+      <section className="mt-6 space-y-3">
         {episodeList.map((ep) => {
           const checked = !!watchedMap[ep.no]
           return (
-            <article
-              key={ep.no}
-              className={`rounded-xl border p-4 shadow-sm ${
-                checked ? 'border-green-300 bg-green-50' : 'border-slate-300 bg-white'
-              }`}
-            >
+            <article key={ep.no} className={`rounded-xl border p-4 shadow-sm ${checked ? 'border-green-300 bg-green-50' : 'border-slate-300 bg-white'}`}>
               <div className="flex items-start gap-3">
-                <input
-                  id={`ep-${ep.no}`}
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleEpisode(ep.no)}
-                  className="mt-1 h-5 w-5"
-                  aria-describedby={`ep-summary-${ep.no}`}
-                />
+                <input id={`ep-${ep.no}`} type="checkbox" checked={checked} onChange={() => toggleEpisode(ep.no)} className="mt-1 h-5 w-5" />
                 <div>
-                  <label htmlFor={`ep-${ep.no}`} className="cursor-pointer text-lg font-semibold text-slate-900">
-                    第 {ep.no} 集 · {ep.title}
-                  </label>
-                  <p id={`ep-summary-${ep.no}`} className="mt-1 text-slate-700">
-                    {ep.summary}
-                  </p>
+                  <label htmlFor={`ep-${ep.no}`} className="cursor-pointer text-lg font-semibold text-slate-900">第 {ep.no} 集 · {ep.title}</label>
+                  <p className="mt-1 text-slate-700">{ep.summary}</p>
                 </div>
               </div>
             </article>
@@ -247,54 +209,33 @@ function XiaoXiangTab() {
   )
 }
 
-export default function App() {
-  const [tab, setTab] = useState<'arsenal' | 'xiaoxiang'>('arsenal')
+function Layout() {
+  const { pathname } = useLocation()
+  const isArsenal = pathname.startsWith('/arsenal')
+  const isXiaoXiang = pathname.startsWith('/xiaoxiang')
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:rounded bg-white px-3 py-2"
-      >
-        Skip to content
-      </a>
-
       <header className="border-b border-slate-300 bg-white">
         <div className="mx-auto max-w-4xl px-4 py-6">
-          <p className="text-sm font-medium uppercase tracking-wide text-red-700">Family Dashboard</p>
-          <h1 className="mt-1 text-3xl font-bold">Simple tabs for sports + life projects</h1>
-          <p className="mt-2 text-slate-700">React + TypeScript + Tailwind CSS</p>
-
+          <h1 className="text-3xl font-bold">Family Dashboard</h1>
+          <p className="mt-2 text-slate-700">每个模块一个可分享 URL</p>
           <nav className="mt-4" aria-label="Main tabs">
             <div className="inline-flex rounded-lg border border-slate-300 bg-slate-50 p-1">
-              <button
-                onClick={() => setTab('arsenal')}
-                className={`rounded-md px-4 py-2 text-sm font-medium ${
-                  tab === 'arsenal' ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'
-                }`}
-                aria-pressed={tab === 'arsenal'}
-              >
-                Arsenal
-              </button>
-              <button
-                onClick={() => setTab('xiaoxiang')}
-                className={`rounded-md px-4 py-2 text-sm font-medium ${
-                  tab === 'xiaoxiang' ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'
-                }`}
-                aria-pressed={tab === 'xiaoxiang'}
-              >
-                小巷人家追剧
-              </button>
+              <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
+              <Link to="/xiaoxiang" className={`rounded-md px-4 py-2 text-sm font-medium ${isXiaoXiang ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'}`}>小巷人家追剧</Link>
             </div>
           </nav>
         </div>
       </header>
 
-      {tab === 'arsenal' ? <ArsenalTab /> : <XiaoXiangTab />}
-
-      <footer className="mx-auto max-w-4xl px-4 pb-8 text-sm text-slate-600">
-        <p>追剧勾选状态会保存在本地浏览器（localStorage）。</p>
-      </footer>
+      <Routes>
+        <Route path="/arsenal" element={<ArsenalPage />} />
+        <Route path="/xiaoxiang" element={<XiaoXiangPage />} />
+        <Route path="*" element={<Navigate to="/arsenal" replace />} />
+      </Routes>
     </div>
   )
 }
+
+export default Layout
