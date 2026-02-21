@@ -247,23 +247,7 @@ function MingDaoSkewerPage() {
         </ul>
       </section>
 
-      <section className="mt-6">
-        <h3 className="mb-3 text-xl font-semibold">三人合照（侦探动画气质）</h3>
-        <img
-          src="/mingdao/family-3-anime-collage.jpg"
-          alt="三个人开心吃串的合成插画风合照"
-          className="w-full rounded-2xl border border-amber-200 object-cover shadow-sm"
-        />
-      </section>
 
-      <section className="mt-6">
-        <h3 className="mb-3 text-xl font-semibold">今日食评现场</h3>
-        <div className="grid gap-4 md:grid-cols-3">
-          <img src="/mingdao/1.jpg" alt="明道肉串食评现场照片1" className="h-full w-full rounded-xl object-cover shadow-sm" />
-          <img src="/mingdao/2.jpg" alt="明道肉串食评现场照片2" className="h-full w-full rounded-xl object-cover shadow-sm" />
-          <img src="/mingdao/3.jpg" alt="明道肉串食评现场照片3" className="h-full w-full rounded-xl object-cover shadow-sm" />
-        </div>
-      </section>
     </main>
   )
 }
