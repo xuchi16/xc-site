@@ -209,10 +209,52 @@ function XiaoXiangPage() {
   )
 }
 
+function MingDaoSkewerPage() {
+  const flavorTags = [
+    '外焦里嫩',
+    '咸香入骨',
+    '炭火香气',
+    '越嚼越香',
+    '一口上头',
+  ]
+
+  return (
+    <main id="main-content" className="mx-auto max-w-4xl px-4 py-8">
+      <section className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-100 p-6">
+        <p className="text-sm font-semibold uppercase tracking-wide text-amber-800">明道肉串研究所</p>
+        <h2 className="mt-2 text-3xl font-bold text-amber-950">这串，不讲武德地好吃</h2>
+        <p className="mt-3 text-lg text-amber-900">
+          第一口先是炭火香打头阵，第二口肉汁直接接管味蕾，第三口开始认真思考：
+          <strong>为什么不一次买二十串？</strong>
+        </p>
+      </section>
+
+      <section className="mt-6 grid gap-4 md:grid-cols-2" aria-label="flavor notes">
+        {flavorTags.map((tag) => (
+          <article key={tag} className="rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
+            <h3 className="text-lg font-semibold text-amber-900">{tag}</h3>
+            <p className="mt-1 text-slate-700">吃的时候安静两秒，是对这串肉最基本的尊重。</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
+        <h3 className="text-xl font-semibold">今日结论</h3>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-800">
+          <li>明道肉串是那种“本来只想尝一口，最后拿签子算账”的类型。</li>
+          <li>适合朋友局、家庭局、以及“今天必须奖励自己局”。</li>
+          <li>建议搭配：可乐 / 冰啤 / 开心聊天。</li>
+        </ul>
+      </section>
+    </main>
+  )
+}
+
 function Layout() {
   const { pathname } = useLocation()
   const isArsenal = pathname.startsWith('/arsenal')
   const isXiaoXiang = pathname.startsWith('/xiaoxiang')
+  const isMingdao = pathname.startsWith('/mingdao')
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -221,9 +263,10 @@ function Layout() {
           <h1 className="text-3xl font-bold">Family Dashboard</h1>
           <p className="mt-2 text-slate-700">每个模块一个可分享 URL</p>
           <nav className="mt-4" aria-label="Main tabs">
-            <div className="inline-flex rounded-lg border border-slate-300 bg-slate-50 p-1">
+            <div className="inline-flex flex-wrap rounded-lg border border-slate-300 bg-slate-50 p-1">
               <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
               <Link to="/xiaoxiang" className={`rounded-md px-4 py-2 text-sm font-medium ${isXiaoXiang ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'}`}>小巷人家追剧</Link>
+              <Link to="/mingdao" className={`rounded-md px-4 py-2 text-sm font-medium ${isMingdao ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-700'}`}>明道肉串</Link>
             </div>
           </nav>
         </div>
@@ -232,6 +275,7 @@ function Layout() {
       <Routes>
         <Route path="/arsenal" element={<ArsenalPage />} />
         <Route path="/xiaoxiang" element={<XiaoXiangPage />} />
+        <Route path="/mingdao" element={<MingDaoSkewerPage />} />
         <Route path="*" element={<Navigate to="/arsenal" replace />} />
       </Routes>
     </div>
