@@ -246,6 +246,15 @@ function MingDaoSkewerPage() {
           <li>建议搭配：可乐 / 冰啤 / 开心聊天。</li>
         </ul>
       </section>
+
+      <section className="mt-6">
+        <h3 className="mb-3 text-xl font-semibold">今日食评现场</h3>
+        <div className="grid gap-4 md:grid-cols-3">
+          <img src="/mingdao/1.jpg" alt="明道肉串食评现场照片1" className="h-full w-full rounded-xl object-cover shadow-sm" />
+          <img src="/mingdao/2.jpg" alt="明道肉串食评现场照片2" className="h-full w-full rounded-xl object-cover shadow-sm" />
+          <img src="/mingdao/3.jpg" alt="明道肉串食评现场照片3" className="h-full w-full rounded-xl object-cover shadow-sm" />
+        </div>
+      </section>
     </main>
   )
 }
