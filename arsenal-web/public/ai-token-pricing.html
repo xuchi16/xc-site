@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主流 AI Token 价格趋势（2023-2026）</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a30; --text:#e9eefc; --muted:#9fb0d8; --grid:#2a365a; }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#0a0f1d,#111a33);color:var(--text)}
+    .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+    h1{margin:0 0 8px;font-size:28px} p{color:var(--muted)}
+    .card{background:rgba(18,26,48,.9);border:1px solid #233155;border-radius:14px;padding:16px;margin:14px 0;backdrop-filter: blur(4px)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .pill{padding:7px 12px;border:1px solid #334676;border-radius:999px;cursor:pointer;color:var(--muted);user-select:none}
+    .pill.active{background:#2a3f78;color:#fff;border-color:#4f6fc7}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid #28365d;text-align:left}
+    th{color:#b9c7ea;font-weight:600}
+    .small{font-size:12px;color:var(--muted)}
+    .legend{display:flex;gap:10px;flex-wrap:wrap}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    svg{width:100%;height:360px;display:block;background:#0e1529;border-radius:12px;border:1px solid #26365f}
+    .note{line-height:1.55}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>主流 AI 公司 Token 价格趋势（2023-2026）</h1>
+    <p>单位：USD / 1M tokens。说明：Kimi / MiniMax / DeepSeek 使用“代表区间值”用于趋势展示（非审计口径）。</p>
+
+    <div class="card">
+      <div class="row" id="metricToggle">
+        <span class="pill active" data-metric="input">Input 价格</span>
+        <span class="pill" data-metric="output">Output 价格</span>
+      </div>
+      <svg id="chart" viewBox="0 0 1000 360" preserveAspectRatio="none"></svg>
+      <div class="legend" id="legend" style="margin-top:10px"></div>
+      <div class="small" style="margin-top:8px">注：图中纵轴为绝对价格（USD / 1M tokens）。</div>
+    </div>
+
+    <div class="card">
+      <table id="priceTable">
+        <thead>
+          <tr>
+            <th>厂商</th><th>时间</th><th>模型</th><th>Input</th><th>Output</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card note">
+      <b>结论（快速读）</b>
+      <ul>
+        <li>2023→2026 整体明显降价，单位 token 成本持续下行。</li>
+        <li>OpenAI：GPT-4（2023）到 GPT-4o / 4.1，价格显著下降。</li>
+        <li>Anthropic：高端（Opus）高价，主力（Sonnet）保持中价。</li>
+        <li>国产厂商（Kimi / MiniMax / DeepSeek）整体更激进，低价策略明显。</li>
+      </ul>
+      <div class="small">如果你要“严格可追溯版”，我可以再加：每一行对应官方链接与发布时间。</div>
+    </div>
+  </div>
+
+<script>
+const rows = [
+  {vendor:'OpenAI', t:'2023-03', model:'GPT-4 (8K)', input:30, output:60, note:'早期高价基线'},
+  {vendor:'OpenAI', t:'2024-05', model:'GPT-4o', input:5, output:15, note:'相比 GPT-4 大降价'},
+  {vendor:'OpenAI', t:'2025-04', model:'GPT-4.1', input:2, output:8, note:'继续下探'},
+
+  {vendor:'Anthropic', t:'2023-07', model:'Claude 2.x (代表)', input:8, output:24, note:'2023 主力档'},
+  {vendor:'Anthropic', t:'2024-03', model:'Claude 3 Opus', input:15, output:75, note:'高能力高价'},
+  {vendor:'Anthropic', t:'2024-03', model:'Claude 3 Sonnet', input:3, output:15, note:'主力性价比档'},
+
+  {vendor:'Kimi', t:'2024-12', model:'Moonshot/Kimi 主力线(代表)', input:1.5, output:6, note:'代表区间值（动态调整较多）'},
+  {vendor:'Kimi', t:'2025-12', model:'Kimi 主力线(代表)', input:1.2, output:5, note:'趋势示意'},
+
+  {vendor:'MiniMax', t:'2024-12', model:'MiniMax 主力线(代表)', input:1.2, output:4.5, note:'代表区间值'},
+  {vendor:'MiniMax', t:'2025-12', model:'MiniMax 主力线(代表)', input:1.0, output:4.0, note:'趋势示意'},
+
+  {vendor:'DeepSeek', t:'2024-12', model:'DeepSeek-V3/chat线(代表)', input:0.3, output:1.1, note:'极低价策略'},
+  {vendor:'DeepSeek', t:'2025-12', model:'DeepSeek chat/reasoner(代表)', input:0.27, output:1.1, note:'趋势示意'}
+];
+
+const colors = { OpenAI:'#64d2ff', Anthropic:'#ff9f68', Kimi:'#7ee787', MiniMax:'#d2a8ff', DeepSeek:'#f2cc60' };
+let metric = 'input';
+
+function toYearFloat(t){ const [y,m]=t.split('-').map(Number); return y + (m-1)/12; }
+function fmt(v){ return Number.isInteger(v) ? v.toString() : v.toFixed(v<1?2:1); }
+
+function renderTable(){
+  const tbody = document.querySelector('#priceTable tbody');
+  tbody.innerHTML = rows.map(r=>`<tr><td>${r.vendor}</td><td class="mono">${r.t}</td><td>${r.model}</td><td>${fmt(r.input)}</td><td>${fmt(r.output)}</td><td class="small">${r.note}</td></tr>`).join('');
+}
+
+function renderChart(){
+  const svg = document.getElementById('chart');
+  const W=1000,H=360,p={l:70,r:20,t:20,b:45};
+  const xs = rows.map(r=>toYearFloat(r.t));
+  const ys = rows.map(r=>r[metric]);
+  const xmin=Math.min(...xs), xmax=Math.max(...xs), ymin=0, ymax=Math.max(...ys)*1.1;
+  const x = v => p.l + (v-xmin)/(xmax-xmin)*(W-p.l-p.r);
+  const y = v => H-p.b - (v-ymin)/(ymax-ymin)*(H-p.t-p.b);
+
+  const vendors = [...new Set(rows.map(r=>r.vendor))];
+
+  let grid='';
+  for(let i=0;i<=5;i++){
+    const v = ymin + (ymax-ymin)*i/5;
+    grid += `<line x1="${p.l}" y1="${y(v)}" x2="${W-p.r}" y2="${y(v)}" stroke="#2a365a"/>`+
+            `<text x="${p.l-10}" y="${y(v)+4}" fill="#9fb0d8" font-size="12" text-anchor="end">${fmt(v)}</text>`;
+  }
+  const xTicks=['2023-01','2024-01','2025-01','2026-01'];
+  xTicks.forEach(t=>{
+    const xx=x(toYearFloat(t));
+    grid += `<line x1="${xx}" y1="${p.t}" x2="${xx}" y2="${H-p.b}" stroke="#223056"/>`+
+            `<text x="${xx}" y="${H-18}" fill="#9fb0d8" font-size="12" text-anchor="middle">${t.slice(0,4)}</text>`;
+  });
+
+  let lines='';
+  vendors.forEach(v=>{
+    const pts = rows.filter(r=>r.vendor===v).sort((a,b)=>a.t.localeCompare(b.t));
+    const d = pts.map((r,i)=>`${i?'L':'M'} ${x(toYearFloat(r.t))} ${y(r[metric])}`).join(' ');
+    lines += `<path d="${d}" fill="none" stroke="${colors[v]}" stroke-width="2.5"/>`;
+    pts.forEach(r=>{ lines += `<circle cx="${x(toYearFloat(r.t))}" cy="${y(r[metric])}" r="3.8" fill="${colors[v]}"/>`; });
+  });
+
+  svg.innerHTML = `${grid}${lines}<text x="${W/2}" y="18" fill="#cdd9f8" font-size="13" text-anchor="middle">${metric==='input'?'Input':'Output'} 价格趋势（USD / 1M tokens）</text>`;
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = vendors.map(v=>`<span><span class="dot" style="background:${colors[v]}"></span>${v}</span>`).join('');
+}
+
+renderTable(); renderChart();
+
+document.getElementById('metricToggle').addEventListener('click',(e)=>{
+  const t = e.target.closest('.pill'); if(!t) return;
+  metric = t.dataset.metric;
+  [...document.querySelectorAll('.pill')].forEach(p=>p.classList.toggle('active', p===t));
+  renderChart();
+});
+</script>
+</body>
+</html>
