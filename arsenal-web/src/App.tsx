@@ -262,8 +262,8 @@ function Layout() {
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <header className="border-b border-slate-300 bg-white">
         <div className="mx-auto max-w-4xl px-4 py-6">
-          <h1 className="text-3xl font-bold">Family Dashboard</h1>
-          <p className="mt-2 text-slate-700">每个模块一个可分享 URL</p>
+          <h1 className="text-3xl font-bold">XC 的个人网站</h1>
+          <p className="mt-2 text-slate-700">Arsenal 只是其中一个 Tab，其他模块也会持续加入</p>
           <nav className="mt-4" aria-label="Main tabs">
             <div className="inline-flex flex-wrap rounded-lg border border-slate-300 bg-slate-50 p-1">
               <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
