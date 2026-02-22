@@ -10,4 +10,4 @@
   - Input / Output 切换
   - 厂商多选筛选（全选/清空）
   - 价格表与趋势图
-- 代码在工作区 `arsenal-web/public/ai-token-pricing.html`。
+- 代码在工作区 `xc-site/public/ai-token-pricing.html`。
