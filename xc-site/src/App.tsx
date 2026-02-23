@@ -281,79 +281,20 @@ function NavigationPage() {
   )
 }
 
-type PricingRow = {
-  vendor: string
-  t: string
-  model: string
-  input: number
-  output: number
-}
-
-const pricingRows: PricingRow[] = [
-  { vendor: 'OpenAI', t: '2023-03', model: 'GPT-4 (8K)', input: 30, output: 60 },
-  { vendor: 'OpenAI', t: '2023-11', model: 'GPT-4 Turbo', input: 10, output: 30 },
-  { vendor: 'OpenAI', t: '2024-05', model: 'GPT-4o', input: 5, output: 15 },
-  { vendor: 'OpenAI', t: '2024-07', model: 'GPT-4o mini', input: 0.15, output: 0.6 },
-  { vendor: 'OpenAI', t: '2025-04', model: 'GPT-4.1', input: 2, output: 8 },
-  { vendor: 'Anthropic', t: '2023-07', model: 'Claude 2.x', input: 8, output: 24 },
-  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Haiku', input: 0.25, output: 1.25 },
-  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Sonnet', input: 3, output: 15 },
-  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Opus', input: 15, output: 75 },
-  { vendor: 'Kimi', t: '2024-03', model: 'Moonshot/Kimi(代表)', input: 12, output: 12 },
-  { vendor: 'Kimi', t: '2024-10', model: 'Moonshot/Kimi(代表)', input: 2.5, output: 10 },
-  { vendor: 'Kimi', t: '2025-12', model: 'Kimi(代表)', input: 1.2, output: 5 },
-  { vendor: 'MiniMax', t: '2024-06', model: 'MiniMax(代表)', input: 3, output: 9 },
-  { vendor: 'MiniMax', t: '2025-01', model: 'MiniMax(代表)', input: 1.6, output: 5.5 },
-  { vendor: 'MiniMax', t: '2025-12', model: 'MiniMax(代表)', input: 1, output: 4 },
-  { vendor: 'DeepSeek', t: '2024-05', model: 'DeepSeek(代表)', input: 0.5, output: 1.5 },
-  { vendor: 'DeepSeek', t: '2024-12', model: 'DeepSeek(代表)', input: 0.3, output: 1.1 },
-  { vendor: 'DeepSeek', t: '2025-12', model: 'DeepSeek(代表)', input: 0.27, output: 1.1 },
-]
-
 function AiPricingPage() {
-  const vendors = [...new Set(pricingRows.map((r) => r.vendor))]
-  const [metric, setMetric] = useState<'input' | 'output'>('input')
-  const [selected, setSelected] = useState<string[]>(vendors)
-  const rows = pricingRows.filter((r) => selected.includes(r.vendor)).sort((a, b) => a.t.localeCompare(b.t))
-
-  const max = Math.max(...rows.map((r) => r[metric]), 1)
-
-  function toggleVendor(v: string) {
-    setSelected((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]))
-  }
-
   return (
-    <main id="main-content" className="mx-auto max-w-5xl px-4 py-8">
+    <main id="main-content" className="mx-auto max-w-6xl px-4 py-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-semibold">AI Token 价格趋势</h2>
-        <p className="mt-2 text-slate-700">React 页面版本（不再跳出到静态页）。</p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => setMetric('input')} className={`rounded-md px-3 py-2 text-sm ${metric === 'input' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}>Input</button>
-          <button onClick={() => setMetric('output')} className={`rounded-md px-3 py-2 text-sm ${metric === 'output' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}>Output</button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {vendors.map((v) => (
-            <button key={v} onClick={() => toggleVendor(v)} className={`rounded-full border px-3 py-1 text-sm ${selected.includes(v) ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-700'}`}>
-              {v}
-            </button>
-          ))}
-        </div>
+        <p className="mt-2 text-slate-700">已恢复完整图表（含厂商多选、Input/Output 切换）。</p>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold">趋势条形图（{metric}）</h3>
-        <div className="mt-4 space-y-2">
-          {rows.map((r) => (
-            <div key={`${r.vendor}-${r.t}-${r.model}`}>
-              <div className="mb-1 text-sm text-slate-700">{r.t} · {r.vendor} · {r.model} · {r[metric]}</div>
-              <div className="h-2 w-full rounded bg-slate-200">
-                <div className="h-2 rounded bg-blue-600" style={{ width: `${(r[metric] / max) * 100}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
+      <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <iframe
+          title="AI Token Pricing"
+          src="/ai-token-pricing.html"
+          className="h-[920px] w-full"
+        />
       </section>
     </main>
   )
