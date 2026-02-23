@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主流 AI Token 价格趋势（2023-2026）</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a30; --text:#e9eefc; --muted:#9fb0d8; --grid:#2a365a; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#0a0f1d,#111a33);color:var(--text)}
+    .wrap{max-width:1180px;margin:28px auto;padding:0 16px}
+    h1{margin:0 0 8px;font-size:28px}
+    p{color:var(--muted)}
+    .card{background:rgba(18,26,48,.9);border:1px solid #233155;border-radius:14px;padding:16px;margin:14px 0;backdrop-filter: blur(4px)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{padding:7px 12px;border:1px solid #334676;border-radius:999px;cursor:pointer;color:var(--muted);user-select:none}
+    .pill.active{background:#2a3f78;color:#fff;border-color:#4f6fc7}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:9px;border-bottom:1px solid #28365d;text-align:left;vertical-align:top}
+    th{color:#b9c7ea;font-weight:600}
+    .small{font-size:12px;color:var(--muted)}
+    .legend{display:flex;gap:10px;flex-wrap:wrap}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    svg{width:100%;height:380px;display:block;background:#0e1529;border-radius:12px;border:1px solid #26365f}
+    .note{line-height:1.55}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>主流 AI 公司 Token 价格趋势（2023-2026）</h1>
+    <p>单位：USD / 1M tokens。OpenAI / Anthropic 多为公开定价；Kimi / MiniMax / DeepSeek 受版本与页面动态渲染影响，部分为代表历史点（已标注）。</p>
+
+    <div class="card">
+      <div class="row" id="metricToggle" style="margin-bottom:10px">
+        <span class="pill active" data-metric="input">Input 价格</span>
+        <span class="pill" data-metric="output">Output 价格</span>
+      </div>
+      <div class="row" id="vendorToggle" style="margin-bottom:10px"></div>
+      <svg id="chart" viewBox="0 0 1100 380" preserveAspectRatio="none"></svg>
+      <div class="legend" id="legend" style="margin-top:10px"></div>
+      <div class="small" style="margin-top:8px">支持多选厂商筛选；纵轴为绝对价格（USD / 1M）。</div>
+    </div>
+
+    <div class="card">
+      <table id="priceTable">
+        <thead>
+          <tr>
+            <th>厂商</th><th>时间</th><th>模型</th><th>Input</th><th>Output</th><th>可信度</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="small" style="margin-top:8px">可信度：官方=官方公开定价；代表=基于公开资料整理的代表点（用于趋势观察）。</div>
+    </div>
+  </div>
+
+<script>
+const rows = [
+  // OpenAI (official milestones)
+  {vendor:'OpenAI', t:'2023-03', model:'GPT-4 (8K)', input:30, output:60, confidence:'官方', note:'早期高价基线'},
+  {vendor:'OpenAI', t:'2023-11', model:'GPT-4 Turbo', input:10, output:30, confidence:'官方', note:'DevDay 后显著降价'},
+  {vendor:'OpenAI', t:'2024-05', model:'GPT-4o', input:5, output:15, confidence:'官方', note:'进一步降价'},
+  {vendor:'OpenAI', t:'2024-07', model:'GPT-4o mini', input:0.15, output:0.60, confidence:'官方', note:'轻量模型价格下探'},
+  {vendor:'OpenAI', t:'2025-04', model:'GPT-4.1', input:2, output:8, confidence:'官方', note:'旗舰成本继续下降'},
+
+  // Anthropic (official milestones)
+  {vendor:'Anthropic', t:'2023-07', model:'Claude 2.x', input:8, output:24, confidence:'官方', note:'2023 主力档'},
+  {vendor:'Anthropic', t:'2024-03', model:'Claude 3 Haiku', input:0.25, output:1.25, confidence:'官方', note:'低价高吞吐档'},
+  {vendor:'Anthropic', t:'2024-03', model:'Claude 3 Sonnet', input:3, output:15, confidence:'官方', note:'主力均衡档'},
+  {vendor:'Anthropic', t:'2024-03', model:'Claude 3 Opus', input:15, output:75, confidence:'官方', note:'高能力高价档'},
+
+  // Kimi / Moonshot (representative historical points)
+  {vendor:'Kimi', t:'2024-03', model:'Moonshot-v1 早期档(代表)', input:12, output:12, confidence:'代表', note:'早期公开资料常见档位（口径差异较大）'},
+  {vendor:'Kimi', t:'2024-10', model:'Moonshot-v1 调价后(代表)', input:2.5, output:10, confidence:'代表', note:'价格战阶段明显下探'},
+  {vendor:'Kimi', t:'2025-12', model:'Kimi 主力线(代表)', input:1.2, output:5, confidence:'代表', note:'趋势示意，仍会随版本变动'},
+
+  // MiniMax (representative historical points)
+  {vendor:'MiniMax', t:'2024-06', model:'MiniMax 文本主力(代表)', input:3.0, output:9.0, confidence:'代表', note:'代表历史档位'},
+  {vendor:'MiniMax', t:'2025-01', model:'MiniMax 文本主力(代表)', input:1.6, output:5.5, confidence:'代表', note:'下行趋势'},
+  {vendor:'MiniMax', t:'2025-12', model:'MiniMax 文本主力(代表)', input:1.0, output:4.0, confidence:'代表', note:'趋势示意'},
+
+  // DeepSeek (representative historical points)
+  {vendor:'DeepSeek', t:'2024-05', model:'DeepSeek-V2/chat(代表)', input:0.5, output:1.5, confidence:'代表', note:'低价策略起点'},
+  {vendor:'DeepSeek', t:'2024-12', model:'DeepSeek-V3/chat(代表)', input:0.3, output:1.1, confidence:'代表', note:'进一步压低价格'},
+  {vendor:'DeepSeek', t:'2025-12', model:'DeepSeek chat/reasoner(代表)', input:0.27, output:1.1, confidence:'代表', note:'趋势示意'}
+];
+
+const colors = { OpenAI:'#64d2ff', Anthropic:'#ff9f68', Kimi:'#7ee787', MiniMax:'#d2a8ff', DeepSeek:'#f2cc60' };
+const vendors = [...new Set(rows.map(r=>r.vendor))];
+let metric = 'input';
+let selected = new Set(vendors);
+
+function toYearFloat(t){ const [y,m]=t.split('-').map(Number); return y + (m-1)/12; }
+function fmt(v){ return Number.isInteger(v) ? String(v) : (v<1 ? v.toFixed(2) : v.toFixed(2).replace(/\.00$/,'').replace(/0$/,'')); }
+
+function filteredRows(){ return rows.filter(r=>selected.has(r.vendor)); }
+
+function renderVendorToggle(){
+  const box = document.getElementById('vendorToggle');
+  box.innerHTML = vendors.map(v=>`<span class="pill active" data-vendor="${v}"><span class="dot" style="background:${colors[v]}"></span>${v}</span>`).join('') +
+    `<span class="pill" data-action="all">全选</span><span class="pill" data-action="none">清空</span>`;
+}
+
+function updateVendorPills(){
+  document.querySelectorAll('#vendorToggle .pill[data-vendor]').forEach(el=>{
+    const v = el.dataset.vendor;
+    el.classList.toggle('active', selected.has(v));
+  });
+}
+
+function renderTable(){
+  const tbody = document.querySelector('#priceTable tbody');
+  const data = filteredRows().sort((a,b)=>a.t.localeCompare(b.t)||a.vendor.localeCompare(b.vendor));
+  tbody.innerHTML = data.map(r=>`<tr><td>${r.vendor}</td><td class="mono">${r.t}</td><td>${r.model}</td><td>${fmt(r.input)}</td><td>${fmt(r.output)}</td><td>${r.confidence}</td><td class="small">${r.note}</td></tr>`).join('');
+}
+
+function renderChart(){
+  const data = filteredRows();
+  const svg = document.getElementById('chart');
+  if(!data.length){ svg.innerHTML = '<text x="550" y="190" text-anchor="middle" fill="#9fb0d8">请至少选择一个厂商</text>'; return; }
+
+  const W=1100,H=380,p={l:70,r:20,t:20,b:48};
+  const xs = data.map(r=>toYearFloat(r.t));
+  const ys = data.map(r=>r[metric]);
+  const xmin=Math.min(...xs), xmax=Math.max(...xs), ymin=0, ymax=Math.max(...ys)*1.1;
+  const x = v => p.l + (v-xmin)/(xmax-xmin||1)*(W-p.l-p.r);
+  const y = v => H-p.b - (v-ymin)/(ymax-ymin||1)*(H-p.t-p.b);
+
+  let grid='';
+  for(let i=0;i<=5;i++){
+    const v = ymin + (ymax-ymin)*i/5;
+    grid += `<line x1="${p.l}" y1="${y(v)}" x2="${W-p.r}" y2="${y(v)}" stroke="#2a365a"/>`+
+            `<text x="${p.l-10}" y="${y(v)+4}" fill="#9fb0d8" font-size="12" text-anchor="end">${fmt(v)}</text>`;
+  }
+  const years = [...new Set(data.map(r=>r.t.slice(0,4)))].sort();
+  years.forEach(yy=>{
+    const xx=x(Number(yy));
+    grid += `<line x1="${xx}" y1="${p.t}" x2="${xx}" y2="${H-p.b}" stroke="#223056"/>`+
+            `<text x="${xx}" y="${H-18}" fill="#9fb0d8" font-size="12" text-anchor="middle">${yy}</text>`;
+  });
+
+  let lines='';
+  [...selected].forEach(v=>{
+    const pts = data.filter(r=>r.vendor===v).sort((a,b)=>a.t.localeCompare(b.t));
+    if(!pts.length) return;
+    const d = pts.map((r,i)=>`${i?'L':'M'} ${x(toYearFloat(r.t))} ${y(r[metric])}`).join(' ');
+    lines += `<path d="${d}" fill="none" stroke="${colors[v]}" stroke-width="2.5"/>`;
+    pts.forEach(r=>{ lines += `<circle cx="${x(toYearFloat(r.t))}" cy="${y(r[metric])}" r="3.6" fill="${colors[v]}"><title>${v} ${r.t} ${r.model}: ${fmt(r[metric])}</title></circle>`; });
+  });
+
+  svg.innerHTML = `${grid}${lines}<text x="${W/2}" y="18" fill="#cdd9f8" font-size="13" text-anchor="middle">${metric==='input'?'Input':'Output'} 价格趋势（USD / 1M tokens）</text>`;
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = [...selected].map(v=>`<span><span class="dot" style="background:${colors[v]}"></span>${v}</span>`).join('');
+}
+
+function rerender(){ updateVendorPills(); renderTable(); renderChart(); }
+
+renderVendorToggle(); rerender();
+
+document.getElementById('metricToggle').addEventListener('click',(e)=>{
+  const t = e.target.closest('.pill'); if(!t) return;
+  metric = t.dataset.metric;
+  [...document.querySelectorAll('#metricToggle .pill')].forEach(p=>p.classList.toggle('active', p===t));
+  renderChart();
+});
+
+document.getElementById('vendorToggle').addEventListener('click',(e)=>{
+  const p = e.target.closest('.pill'); if(!p) return;
+  const v = p.dataset.vendor;
+  const action = p.dataset.action;
+  if(v){ selected.has(v) ? selected.delete(v) : selected.add(v); }
+  if(action==='all'){ selected = new Set(vendors); }
+  if(action==='none'){ selected = new Set(); }
+  rerender();
+});
+</script>
+</body>
+</html>
