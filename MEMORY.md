@@ -5,9 +5,12 @@
 - 希望结果是可直接查看的 Web 页面，而不只是聊天文本。
 
 ## 当前项目状态（长期记忆）
-- 已有线上页面：`https://arsenal-web-iota.vercel.app/ai-token-pricing.html`
+- 已有线上页面：`https://xc-site-bice.vercel.app/ai-token-pricing.html`
 - 页面已支持：
   - Input / Output 切换
   - 厂商多选筛选（全选/清空）
   - 价格表与趋势图
 - 代码在工作区 `xc-site/public/ai-token-pricing.html`。
+
+## 交付偏好
+- 以后交代码，默认流程：先建分支并提交 PR（目标分支通常为 `main`），然后把 PR 链接直接发给用户。
