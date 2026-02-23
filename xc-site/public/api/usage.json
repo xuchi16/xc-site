@@ -1,0 +1,22 @@
+{
+  "updatedAt": "2026-02-23T03:05:00Z",
+  "timezone": "Asia/Shanghai",
+  "source": "openclaw-session-status",
+  "approximate": true,
+  "session": "agent:main:main",
+  "model": "openai-codex/gpt-5.3-codex",
+  "tokens": {
+    "input": 116000,
+    "output": 3700
+  },
+  "quota": {
+    "window5h": {
+      "leftPercent": 73,
+      "leftTime": "1h22m"
+    },
+    "day": {
+      "leftPercent": 38,
+      "leftTime": "2d0h"
+    }
+  }
+}
