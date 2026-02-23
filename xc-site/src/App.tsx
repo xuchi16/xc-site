@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 type Match = {
@@ -257,8 +257,8 @@ function NavigationPage() {
     { title: 'Arsenal', desc: '比赛回顾和赛程', href: '/arsenal' },
     { title: '小巷人家追剧', desc: '40 集追剧清单打勾', href: '/xiaoxiang' },
     { title: '明道肉串', desc: '轻松页面', href: '/mingdao' },
-    { title: 'AI Token 价格趋势', desc: '各厂商价格与图表', href: '/ai-token-pricing.html' },
-    { title: 'Token 用量看板', desc: '会话用量近似快照', href: '/token-usage.html' },
+    { title: 'AI Token 价格趋势', desc: '各厂商价格与图表', href: '/ai-pricing' },
+    { title: 'Token 用量看板', desc: '会话用量近似快照', href: '/token-usage' },
   ]
 
   return (
@@ -270,12 +270,131 @@ function NavigationPage() {
 
       <section className="mt-6 grid gap-4 md:grid-cols-2">
         {cards.map((c) => (
-          <a key={c.href} href={c.href} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm hover:border-slate-400 hover:shadow transition">
+          <Link key={c.href} to={c.href} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm hover:border-slate-400 hover:shadow transition">
             <h3 className="text-lg font-semibold text-slate-900">{c.title}</h3>
             <p className="mt-1 text-slate-700">{c.desc}</p>
             <p className="mt-3 text-sm text-blue-700">打开 {c.href}</p>
-          </a>
+          </Link>
         ))}
+      </section>
+    </main>
+  )
+}
+
+type PricingRow = {
+  vendor: string
+  t: string
+  model: string
+  input: number
+  output: number
+}
+
+const pricingRows: PricingRow[] = [
+  { vendor: 'OpenAI', t: '2023-03', model: 'GPT-4 (8K)', input: 30, output: 60 },
+  { vendor: 'OpenAI', t: '2023-11', model: 'GPT-4 Turbo', input: 10, output: 30 },
+  { vendor: 'OpenAI', t: '2024-05', model: 'GPT-4o', input: 5, output: 15 },
+  { vendor: 'OpenAI', t: '2024-07', model: 'GPT-4o mini', input: 0.15, output: 0.6 },
+  { vendor: 'OpenAI', t: '2025-04', model: 'GPT-4.1', input: 2, output: 8 },
+  { vendor: 'Anthropic', t: '2023-07', model: 'Claude 2.x', input: 8, output: 24 },
+  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Haiku', input: 0.25, output: 1.25 },
+  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Sonnet', input: 3, output: 15 },
+  { vendor: 'Anthropic', t: '2024-03', model: 'Claude 3 Opus', input: 15, output: 75 },
+  { vendor: 'Kimi', t: '2024-03', model: 'Moonshot/Kimi(代表)', input: 12, output: 12 },
+  { vendor: 'Kimi', t: '2024-10', model: 'Moonshot/Kimi(代表)', input: 2.5, output: 10 },
+  { vendor: 'Kimi', t: '2025-12', model: 'Kimi(代表)', input: 1.2, output: 5 },
+  { vendor: 'MiniMax', t: '2024-06', model: 'MiniMax(代表)', input: 3, output: 9 },
+  { vendor: 'MiniMax', t: '2025-01', model: 'MiniMax(代表)', input: 1.6, output: 5.5 },
+  { vendor: 'MiniMax', t: '2025-12', model: 'MiniMax(代表)', input: 1, output: 4 },
+  { vendor: 'DeepSeek', t: '2024-05', model: 'DeepSeek(代表)', input: 0.5, output: 1.5 },
+  { vendor: 'DeepSeek', t: '2024-12', model: 'DeepSeek(代表)', input: 0.3, output: 1.1 },
+  { vendor: 'DeepSeek', t: '2025-12', model: 'DeepSeek(代表)', input: 0.27, output: 1.1 },
+]
+
+function AiPricingPage() {
+  const vendors = [...new Set(pricingRows.map((r) => r.vendor))]
+  const [metric, setMetric] = useState<'input' | 'output'>('input')
+  const [selected, setSelected] = useState<string[]>(vendors)
+  const rows = pricingRows.filter((r) => selected.includes(r.vendor)).sort((a, b) => a.t.localeCompare(b.t))
+
+  const max = Math.max(...rows.map((r) => r[metric]), 1)
+
+  function toggleVendor(v: string) {
+    setSelected((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]))
+  }
+
+  return (
+    <main id="main-content" className="mx-auto max-w-5xl px-4 py-8">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-2xl font-semibold">AI Token 价格趋势</h2>
+        <p className="mt-2 text-slate-700">React 页面版本（不再跳出到静态页）。</p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button onClick={() => setMetric('input')} className={`rounded-md px-3 py-2 text-sm ${metric === 'input' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}>Input</button>
+          <button onClick={() => setMetric('output')} className={`rounded-md px-3 py-2 text-sm ${metric === 'output' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}>Output</button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {vendors.map((v) => (
+            <button key={v} onClick={() => toggleVendor(v)} className={`rounded-full border px-3 py-1 text-sm ${selected.includes(v) ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-700'}`}>
+              {v}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-lg font-semibold">趋势条形图（{metric}）</h3>
+        <div className="mt-4 space-y-2">
+          {rows.map((r) => (
+            <div key={`${r.vendor}-${r.t}-${r.model}`}>
+              <div className="mb-1 text-sm text-slate-700">{r.t} · {r.vendor} · {r.model} · {r[metric]}</div>
+              <div className="h-2 w-full rounded bg-slate-200">
+                <div className="h-2 rounded bg-blue-600" style={{ width: `${(r[metric] / max) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  )
+}
+
+type UsageData = {
+  updatedAt?: string
+  tokens?: { input?: number; output?: number }
+  quota?: { window5h?: { leftPercent?: number }; day?: { leftPercent?: number } }
+}
+
+function TokenUsagePage() {
+  const [data, setData] = useState<UsageData | null>(null)
+
+  async function load() {
+    const res = await fetch(`/api/usage.json?t=${Date.now()}`)
+    const json = (await res.json()) as UsageData
+    setData(json)
+  }
+
+  useEffect(() => {
+    void load()
+  }, [])
+
+  return (
+    <main id="main-content" className="mx-auto max-w-4xl px-4 py-8">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-2xl font-semibold">Token 用量看板</h2>
+        <p className="mt-2 text-slate-700">每次对话后更新快照（近似值）。</p>
+        <button onClick={() => void load()} className="mt-3 rounded-md bg-slate-900 px-3 py-2 text-sm text-white">刷新</button>
+      </section>
+
+      <section className="mt-6 grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="text-xs text-slate-500">Input</div><div className="text-2xl font-bold">{data?.tokens?.input ?? '-'}</div></div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="text-xs text-slate-500">Output</div><div className="text-2xl font-bold">{data?.tokens?.output ?? '-'}</div></div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="text-xs text-slate-500">5h 剩余</div><div className="text-2xl font-bold">{data?.quota?.window5h?.leftPercent ?? '-'}%</div></div>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><div className="text-xs text-slate-500">Day 剩余</div><div className="text-2xl font-bold">{data?.quota?.day?.leftPercent ?? '-'}%</div></div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-700">
+        最后更新时间：{data?.updatedAt ?? '-'}
       </section>
     </main>
   )
@@ -287,6 +406,8 @@ function Layout() {
   const isArsenal = pathname.startsWith('/arsenal')
   const isXiaoXiang = pathname.startsWith('/xiaoxiang')
   const isMingdao = pathname.startsWith('/mingdao')
+  const isPricing = pathname.startsWith('/ai-pricing')
+  const isUsage = pathname.startsWith('/token-usage')
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -300,8 +421,8 @@ function Layout() {
               <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
               <Link to="/xiaoxiang" className={`rounded-md px-4 py-2 text-sm font-medium ${isXiaoXiang ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'}`}>小巷人家追剧</Link>
               <Link to="/mingdao" className={`rounded-md px-4 py-2 text-sm font-medium ${isMingdao ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-700'}`}>明道肉串</Link>
-              <a href="/ai-token-pricing.html" className="rounded-md px-4 py-2 text-sm font-medium text-slate-700">AI Token 价格</a>
-              <a href="/token-usage.html" className="rounded-md px-4 py-2 text-sm font-medium text-slate-700">Token 用量</a>
+              <Link to="/ai-pricing" className={`rounded-md px-4 py-2 text-sm font-medium ${isPricing ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-700'}`}>AI Token 价格</Link>
+              <Link to="/token-usage" className={`rounded-md px-4 py-2 text-sm font-medium ${isUsage ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-700'}`}>Token 用量</Link>
             </div>
           </nav>
         </div>
@@ -312,6 +433,8 @@ function Layout() {
         <Route path="/arsenal" element={<ArsenalPage />} />
         <Route path="/xiaoxiang" element={<XiaoXiangPage />} />
         <Route path="/mingdao" element={<MingDaoSkewerPage />} />
+        <Route path="/ai-pricing" element={<AiPricingPage />} />
+        <Route path="/token-usage" element={<TokenUsagePage />} />
         <Route path="*" element={<Navigate to="/nav" replace />} />
       </Routes>
     </div>
