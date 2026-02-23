@@ -427,6 +427,10 @@ function TokenUsagePage() {
     void load()
   }, [])
 
+  const updatedCn = data?.updatedAt
+    ? new Date(data.updatedAt).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
+    : '-'
+
   return (
     <main id="main-content" className="mx-auto max-w-4xl px-4 py-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -443,7 +447,7 @@ function TokenUsagePage() {
       </section>
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm text-sm text-slate-700">
-        最后更新时间：{data?.updatedAt ?? '-'}
+        最后更新时间（北京时间 UTC+8）：{updatedCn}
       </section>
     </main>
   )
