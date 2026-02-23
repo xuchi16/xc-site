@@ -269,6 +269,7 @@ function Layout() {
               <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
               <Link to="/xiaoxiang" className={`rounded-md px-4 py-2 text-sm font-medium ${isXiaoXiang ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'}`}>小巷人家追剧</Link>
               <Link to="/mingdao" className={`rounded-md px-4 py-2 text-sm font-medium ${isMingdao ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-700'}`}>明道肉串</Link>
+              <a href="/token-usage.html" className="rounded-md px-4 py-2 text-sm font-medium text-slate-700">Token 用量</a>
             </div>
           </nav>
         </div>

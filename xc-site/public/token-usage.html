@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XC · Token 用量看板</title>
+  <style>
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b1020;color:#e9eefc}
+    .wrap{max-width:860px;margin:32px auto;padding:0 16px}
+    .card{background:#121a30;border:1px solid #233155;border-radius:14px;padding:16px;margin:14px 0}
+    .muted{color:#9fb0d8}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .k{font-size:12px;color:#9fb0d8}.v{font-size:22px;font-weight:700}
+    button,a{background:#2a3f78;color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+    pre{background:#0f162c;border:1px solid #25365f;padding:12px;border-radius:10px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Token 用量看板（近似）</h1>
+    <p class="muted">策略：每次对话后由 xclaw 更新一次；没有新对话就保持上次状态。</p>
+
+    <div class="card grid">
+      <div><div class="k">Input Tokens</div><div class="v" id="in">-</div></div>
+      <div><div class="k">Output Tokens</div><div class="v" id="out">-</div></div>
+      <div><div class="k">5h 剩余</div><div class="v" id="w5">-</div></div>
+      <div><div class="k">Day 剩余</div><div class="v" id="day">-</div></div>
+    </div>
+
+    <div class="card">
+      <div class="muted">最后更新时间：<span id="updated">-</span></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="load()">刷新</button>
+        <a href="/">返回首页</a>
+        <a href="/api/usage.json" target="_blank">查看 JSON</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="k">原始数据</div>
+      <pre id="raw">加载中...</pre>
+    </div>
+  </div>
+<script>
+function fmt(n){return (n??0).toLocaleString('en-US')}
+async function load(){
+  const res = await fetch('/api/usage.json?t='+Date.now());
+  const d = await res.json();
+  document.getElementById('in').textContent = fmt(d.tokens?.input);
+  document.getElementById('out').textContent = fmt(d.tokens?.output);
+  document.getElementById('w5').textContent = `${d.quota?.window5h?.leftPercent ?? '-'}%`;
+  document.getElementById('day').textContent = `${d.quota?.day?.leftPercent ?? '-'}%`;
+  document.getElementById('updated').textContent = d.updatedAt || '-';
+  document.getElementById('raw').textContent = JSON.stringify(d,null,2);
+}
+load();
+</script>
+</body>
+</html>
