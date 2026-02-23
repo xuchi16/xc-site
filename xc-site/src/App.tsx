@@ -252,8 +252,38 @@ function MingDaoSkewerPage() {
   )
 }
 
+function NavigationPage() {
+  const cards = [
+    { title: 'Arsenal', desc: '比赛回顾和赛程', href: '/arsenal' },
+    { title: '小巷人家追剧', desc: '40 集追剧清单打勾', href: '/xiaoxiang' },
+    { title: '明道肉串', desc: '轻松页面', href: '/mingdao' },
+    { title: 'AI Token 价格趋势', desc: '各厂商价格与图表', href: '/ai-token-pricing.html' },
+    { title: 'Token 用量看板', desc: '会话用量近似快照', href: '/token-usage.html' },
+  ]
+
+  return (
+    <main id="main-content" className="mx-auto max-w-4xl px-4 py-8">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-2xl font-semibold">站点导航</h2>
+        <p className="mt-2 text-slate-700">你可以从这里自由进入各个 tab / 页面。</p>
+      </section>
+
+      <section className="mt-6 grid gap-4 md:grid-cols-2">
+        {cards.map((c) => (
+          <a key={c.href} href={c.href} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm hover:border-slate-400 hover:shadow transition">
+            <h3 className="text-lg font-semibold text-slate-900">{c.title}</h3>
+            <p className="mt-1 text-slate-700">{c.desc}</p>
+            <p className="mt-3 text-sm text-blue-700">打开 {c.href}</p>
+          </a>
+        ))}
+      </section>
+    </main>
+  )
+}
+
 function Layout() {
   const { pathname } = useLocation()
+  const isNav = pathname.startsWith('/nav')
   const isArsenal = pathname.startsWith('/arsenal')
   const isXiaoXiang = pathname.startsWith('/xiaoxiang')
   const isMingdao = pathname.startsWith('/mingdao')
@@ -266,19 +296,23 @@ function Layout() {
           <p className="mt-2 text-slate-700">Arsenal 只是其中一个 Tab，其他模块也会持续加入</p>
           <nav className="mt-4" aria-label="Main tabs">
             <div className="inline-flex flex-wrap rounded-lg border border-slate-300 bg-slate-50 p-1">
+              <Link to="/nav" className={`rounded-md px-4 py-2 text-sm font-medium ${isNav ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-700'}`}>导航</Link>
               <Link to="/arsenal" className={`rounded-md px-4 py-2 text-sm font-medium ${isArsenal ? 'bg-white text-red-700 shadow-sm' : 'text-slate-700'}`}>Arsenal</Link>
               <Link to="/xiaoxiang" className={`rounded-md px-4 py-2 text-sm font-medium ${isXiaoXiang ? 'bg-white text-rose-700 shadow-sm' : 'text-slate-700'}`}>小巷人家追剧</Link>
               <Link to="/mingdao" className={`rounded-md px-4 py-2 text-sm font-medium ${isMingdao ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-700'}`}>明道肉串</Link>
+              <a href="/ai-token-pricing.html" className="rounded-md px-4 py-2 text-sm font-medium text-slate-700">AI Token 价格</a>
+              <a href="/token-usage.html" className="rounded-md px-4 py-2 text-sm font-medium text-slate-700">Token 用量</a>
             </div>
           </nav>
         </div>
       </header>
 
       <Routes>
+        <Route path="/nav" element={<NavigationPage />} />
         <Route path="/arsenal" element={<ArsenalPage />} />
         <Route path="/xiaoxiang" element={<XiaoXiangPage />} />
         <Route path="/mingdao" element={<MingDaoSkewerPage />} />
-        <Route path="*" element={<Navigate to="/arsenal" replace />} />
+        <Route path="*" element={<Navigate to="/nav" replace />} />
       </Routes>
     </div>
   )
