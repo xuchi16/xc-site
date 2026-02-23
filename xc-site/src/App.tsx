@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Match = {
   date: string
@@ -282,19 +283,126 @@ function NavigationPage() {
 }
 
 function AiPricingPage() {
+  const [metric, setMetric] = useState<'input' | 'output'>('input')
+  const [selectedVendors, setSelectedVendors] = useState<string[]>([
+    'OpenAI',
+    'Anthropic',
+    'Kimi',
+    'MiniMax',
+    'DeepSeek',
+  ])
+
+  const rows = [
+    { date: '2023-03', vendor: 'OpenAI', model: 'GPT-4 (8K)', input: 30, output: 60 },
+    { date: '2023-11', vendor: 'OpenAI', model: 'GPT-4 Turbo', input: 10, output: 30 },
+    { date: '2024-05', vendor: 'OpenAI', model: 'GPT-4o', input: 5, output: 15 },
+    { date: '2024-07', vendor: 'OpenAI', model: 'GPT-4o mini', input: 0.15, output: 0.6 },
+    { date: '2025-04', vendor: 'OpenAI', model: 'GPT-4.1', input: 2, output: 8 },
+    { date: '2023-07', vendor: 'Anthropic', model: 'Claude 2.x', input: 8, output: 24 },
+    { date: '2024-03', vendor: 'Anthropic', model: 'Claude 3 Haiku', input: 0.25, output: 1.25 },
+    { date: '2024-03', vendor: 'Anthropic', model: 'Claude 3 Sonnet', input: 3, output: 15 },
+    { date: '2024-03', vendor: 'Anthropic', model: 'Claude 3 Opus', input: 15, output: 75 },
+    { date: '2024-03', vendor: 'Kimi', model: 'Moonshot/Kimi(代表)', input: 12, output: 12 },
+    { date: '2024-10', vendor: 'Kimi', model: 'Moonshot/Kimi(代表)', input: 2.5, output: 10 },
+    { date: '2025-12', vendor: 'Kimi', model: 'Kimi(代表)', input: 1.2, output: 5 },
+    { date: '2024-06', vendor: 'MiniMax', model: 'MiniMax(代表)', input: 3, output: 9 },
+    { date: '2025-01', vendor: 'MiniMax', model: 'MiniMax(代表)', input: 1.6, output: 5.5 },
+    { date: '2025-12', vendor: 'MiniMax', model: 'MiniMax(代表)', input: 1, output: 4 },
+    { date: '2024-05', vendor: 'DeepSeek', model: 'DeepSeek(代表)', input: 0.5, output: 1.5 },
+    { date: '2024-12', vendor: 'DeepSeek', model: 'DeepSeek(代表)', input: 0.3, output: 1.1 },
+    { date: '2025-12', vendor: 'DeepSeek', model: 'DeepSeek(代表)', input: 0.27, output: 1.1 },
+  ]
+
+  const vendors = ['OpenAI', 'Anthropic', 'Kimi', 'MiniMax', 'DeepSeek']
+  const seriesColors: Record<string, string> = {
+    OpenAI: '#2563eb',
+    Anthropic: '#ea580c',
+    Kimi: '#16a34a',
+    MiniMax: '#7c3aed',
+    DeepSeek: '#ca8a04',
+  }
+
+  const chartData = ['2023-03', '2023-07', '2023-11', '2024-03', '2024-05', '2024-06', '2024-07', '2024-10', '2024-12', '2025-01', '2025-04', '2025-12'].map((date) => {
+    const row: Record<string, string | number | null> = { date }
+    for (const v of vendors) {
+      const points = rows
+        .filter((r) => r.vendor === v && r.date <= date)
+        .sort((a, b) => a.date.localeCompare(b.date))
+      const last = points.at(-1)
+      row[v] = last ? last[metric] : null
+    }
+    return row
+  })
+
+  function toggleVendor(v: string) {
+    setSelectedVendors((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]))
+  }
+
+  const filteredRows = rows.filter((r) => selectedVendors.includes(r.vendor))
+
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-4 py-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-semibold">AI Token 价格趋势</h2>
-        <p className="mt-2 text-slate-700">已恢复完整图表（含厂商多选、Input/Output 切换）。</p>
+        <p className="mt-2 text-slate-700">React + Recharts 原生图表（非嵌入）。</p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button onClick={() => setMetric('input')} className={`rounded-md px-3 py-2 text-sm ${metric === 'input' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}>Input</button>
+          <button onClick={() => setMetric('output')} className={`rounded-md px-3 py-2 text-sm ${metric === 'output' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}>Output</button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {vendors.map((v) => (
+            <button key={v} onClick={() => toggleVendor(v)} className={`rounded-full border px-3 py-1 text-sm ${selectedVendors.includes(v) ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-700'}`}>
+              {v}
+            </button>
+          ))}
+        </div>
       </section>
 
-      <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <iframe
-          title="AI Token Pricing"
-          src="/ai-token-pricing.html"
-          className="h-[920px] w-full"
-        />
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="h-[420px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 16, right: 24, bottom: 8, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {vendors.filter((v) => selectedVendors.includes(v)).map((v) => (
+                <Line key={v} type="monotone" dataKey={v} stroke={seriesColors[v]} strokeWidth={2} dot={false} connectNulls />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-lg font-semibold">价格明细</h3>
+        <div className="mt-3 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b text-slate-500">
+                <th className="px-2 py-2">厂商</th>
+                <th className="px-2 py-2">时间</th>
+                <th className="px-2 py-2">模型</th>
+                <th className="px-2 py-2">Input</th>
+                <th className="px-2 py-2">Output</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((r) => (
+                <tr key={`${r.vendor}-${r.date}-${r.model}`} className="border-b">
+                  <td className="px-2 py-2">{r.vendor}</td>
+                  <td className="px-2 py-2">{r.date}</td>
+                  <td className="px-2 py-2">{r.model}</td>
+                  <td className="px-2 py-2">{r.input}</td>
+                  <td className="px-2 py-2">{r.output}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   )
